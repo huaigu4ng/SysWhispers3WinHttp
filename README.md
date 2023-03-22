@@ -1,5 +1,5 @@
 # SysWhispers3WinHttp
-SysWhispers3WinHttp 在SysWhispers3基础上增添WinHttp分离加载并使用GCC进行编译，文件大小为14KB，可免杀绕过360核晶防护与Defender。
+SysWhispers3WinHttp 基于SysWhispers3项目增添WinHttp分离加载功能并使用32位GCC进行编译，文件大小14KB，可免杀绕过360核晶防护与Defender。
 
 ## 0x01 免责声明：
 
