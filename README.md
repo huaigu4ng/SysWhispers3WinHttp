@@ -1,5 +1,5 @@
 # SysWhispers3WinHttp
-SysWhispers3WinHttp 在SysWhispers3基础上增添WinHttp分离加载并使用GCC进行编译，文件大小为14KB，可绕过360核晶防护与Defender。
+SysWhispers3WinHttp 在SysWhispers3基础上增添WinHttp分离加载并使用GCC进行编译，文件大小为14KB，可免杀绕过360核晶防护与Defender。
 
 ## 0x01 免责声明：
 
@@ -34,3 +34,6 @@ msf6 exploit(multi/handler) > run
 
 ![360demo](https://user-images.githubusercontent.com/128464183/226866480-219f842e-97e1-479b-87be-ce535c03ce59.PNG)
 
+## 0x04 参考：
+https://github.com/klezVirus/SysWhispers3
+https://learn.microsoft.com/zh-cn/windows/win32/api/winhttp/nf-winhttp-winhttpconnect
