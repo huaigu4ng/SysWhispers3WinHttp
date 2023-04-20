@@ -1,5 +1,5 @@
 # SysWhispers3WinHttp
-SysWhispers3WinHttp 基于SysWhispers3项目增添WinHttp分离加载功能并使用32位GCC进行编译，文件大小14KB，可免杀绕过360核晶防护与Defender。
+SysWhispers3WinHttp 基于SysWhispers3项目增添WinHttp分离加载功能，可免杀绕过360核晶与Defender。
 
 ## 0x01 免责声明：
 
@@ -18,7 +18,7 @@ python3 -m http.server
 i686-w64-mingw32-gcc -o SysWhispers3WinHttp.exe syscalls.c SysWhispers3WinHttp.c -masm=intel -fpermissive -w -s -lwinhttp
 ```
 
-注：Windows下32位GCC下载地址 https://master.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/6.4.0/threads-win32/sjlj/i686-6.4.0-release-win32-sjlj-rt_v5-rev0.7z?viasf=1
+注：Windows下也可编译，GCC下载地址为 https://master.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/6.4.0/threads-win32/sjlj/i686-6.4.0-release-win32-sjlj-rt_v5-rev0.7z?viasf=1
 
 
 ## 0x03 演示：
