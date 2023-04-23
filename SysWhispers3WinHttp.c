@@ -37,7 +37,7 @@ int main() {
 
 	// Specify an HTTP server.
 	if (hSession)
-		hConnect = WinHttpConnect(hSession, L"xxx.xxx.xxx.xxx",
+		hConnect = WinHttpConnect(hSession, L"192.168.1.110",
 			8000, 0);
 
 	// Create an HTTP request handle.
