@@ -8,6 +8,7 @@ SysWhispers3WinHttp 基于SysWhispers3增添WinHttp分离加载，在Linux下使
 ## 0x01 更新日志
 
 2023/06/06 支持64位GCC编译与Stager方式上线SliverC2，增添编译参数绕过静态检测。
+
 2023/07/03 支持64位程序在Windows 7 x64上线。
 
 ## 0x02 使用
