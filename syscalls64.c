@@ -252,23 +252,6 @@ EXTERN_C DWORD SW3_GetSyscallNumber(DWORD FunctionHash)
     return -1;
 }
 
-// EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash)
-// {
-//     // Ensure SW3_SyscallList is populated.
-//     if (!SW3_PopulateSyscallList())
-//         return NULL;
-
-//     for (DWORD i = 0; i < SW3_SyscallList.Count; i++)
-//     {
-//         if (FunctionHash == SW3_SyscallList.Entries[i].Hash)
-//         {
-//             return SW3_SyscallList.Entries[i].SyscallAddress;
-//         }
-//     }
-
-//     return NULL;
-// }
-
 EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash)
 {
     // Ensure SW3_SyscallList is populated.
@@ -279,9 +262,7 @@ EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash)
     {
         if (FunctionHash == SW3_SyscallList.Entries[i].Hash)
         {
-            PVOID syscallAddress = SW3_SyscallList.Entries[i].SyscallAddress;
-            __asm__("movq %0, %%r11" : : "r"(syscallAddress)); // 将syscallAddress移动到r11寄存器
-            return syscallAddress;
+            return SW3_SyscallList.Entries[i].SyscallAddress;
         }
     }
 
@@ -304,34 +285,6 @@ EXTERN_C PVOID SW3_GetRandomSyscallAddress(DWORD FunctionHash)
     return SW3_SyscallList.Entries[index].SyscallAddress;
 }
 #if defined(__GNUC__)
-
-// __declspec(naked) NTSTATUS NtAllocateVirtualMemory(
-//     IN HANDLE ProcessHandle,
-//     IN OUT PVOID *BaseAddress,
-//     IN ULONG ZeroBits,
-//     IN OUT PSIZE_T RegionSize,
-//     IN ULONG AllocationType,
-//     IN ULONG Protect)
-// {
-//     asm(
-//         "mov [rsp +8], rcx \n"
-//         "mov [rsp+16], rdx \n"
-//         "mov [rsp+24], r8 \n"
-//         "mov [rsp+32], r9 \n"
-//         "sub rsp, 0x28 \n"
-//         "mov ecx, 0x0B942107 \n"
-//         "call SW3_GetSyscallAddress \n"
-//         "mov ecx, 0x0B942107 \n"
-//         "call SW3_GetSyscallNumber \n"
-//         "add rsp, 0x28 \n"
-//         "mov rcx, [rsp+8] \n"
-//         "mov rdx, [rsp+16] \n"
-//         "mov r8, [rsp+24] \n"
-//         "mov r9, [rsp+32] \n"
-//         "mov r10, rcx \n"
-//         "jmp r11 \n"
-//         "ret \n");
-// }
 
 __declspec(naked) NTSTATUS NtAllocateVirtualMemory(
     IN HANDLE ProcessHandle,
