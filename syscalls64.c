@@ -1,13 +1,14 @@
 #include "syscalls64.h"
 #include <stdio.h>
 
-//#define DEBUG
+// #define DEBUG
 
 // JUMPER
 
 #ifdef _M_IX86
 
-EXTERN_C PVOID internal_cleancall_wow64_gate(VOID) {
+EXTERN_C PVOID internal_cleancall_wow64_gate(VOID)
+{
     return (PVOID)__readfsdword(0xC0);
 }
 
@@ -21,8 +22,7 @@ __declspec(naked) BOOL local_is_wow64(void)
         "ret \n"
         "wow64: \n"
         "mov eax, 1 \n"
-        "ret \n"
-    );
+        "ret \n");
 }
 
 #endif
@@ -45,7 +45,7 @@ DWORD SW3_HashSyscall(PCSTR FunctionName)
 
     while (FunctionName[i])
     {
-        WORD PartialName = *(WORD*)((ULONG_PTR)FunctionName + i++);
+        WORD PartialName = *(WORD *)((ULONG_PTR)FunctionName + i++);
         Hash ^= PartialName + SW3_ROR8(Hash);
     }
 
@@ -63,26 +63,26 @@ PVOID SC_Address(PVOID NtApiAddress)
     DWORD searchLimit = 512;
     PVOID SyscallAddress;
 
-   #ifdef _WIN64
+#ifdef _WIN64
     // If the process is 64-bit on a 64-bit OS, we need to search for syscall
-    BYTE syscall_code[] = { 0x0f, 0x05, 0xc3 };
+    BYTE syscall_code[] = {0x0f, 0x05, 0xc3};
     ULONG distance_to_syscall = 0x12;
-   #else
+#else
     // If the process is 32-bit on a 32-bit OS, we need to search for sysenter
-    BYTE syscall_code[] = { 0x0f, 0x34, 0xc3 };
+    BYTE syscall_code[] = {0x0f, 0x34, 0xc3};
     ULONG distance_to_syscall = 0x0f;
-   #endif
+#endif
 
-  #ifdef _M_IX86
+#ifdef _M_IX86
     // If the process is 32-bit on a 64-bit OS, we need to jump to WOW32Reserved
     if (local_is_wow64())
     {
-    #ifdef DEBUG
+#ifdef DEBUG
         printf("[+] Running 32-bit app on x64 (WOW64)\n");
-    #endif
+#endif
         return NULL;
     }
-  #endif
+#endif
 
     // we don't really care if there is a 'jmp' between
     // NtApiAddress and the 'syscall; ret' instructions
@@ -90,10 +90,10 @@ PVOID SC_Address(PVOID NtApiAddress)
 
     if (!memcmp((PVOID)syscall_code, SyscallAddress, sizeof(syscall_code)))
     {
-        // we can use the original code for this system call :)
-        #if defined(DEBUG)
-            printf("Found Syscall Opcodes at address 0x%p\n", SyscallAddress);
-        #endif
+// we can use the original code for this system call :)
+#if defined(DEBUG)
+        printf("Found Syscall Opcodes at address 0x%p\n", SyscallAddress);
+#endif
         return SyscallAddress;
     }
 
@@ -109,9 +109,9 @@ PVOID SC_Address(PVOID NtApiAddress)
             distance_to_syscall + num_jumps * 0x20);
         if (!memcmp((PVOID)syscall_code, SyscallAddress, sizeof(syscall_code)))
         {
-        #if defined(DEBUG)
+#if defined(DEBUG)
             printf("Found Syscall Opcodes at address 0x%p\n", SyscallAddress);
-        #endif
+#endif
             return SyscallAddress;
         }
 
@@ -122,9 +122,9 @@ PVOID SC_Address(PVOID NtApiAddress)
             distance_to_syscall - num_jumps * 0x20);
         if (!memcmp((PVOID)syscall_code, SyscallAddress, sizeof(syscall_code)))
         {
-        #if defined(DEBUG)
+#if defined(DEBUG)
             printf("Found Syscall Opcodes at address 0x%p\n", SyscallAddress);
-        #endif
+#endif
             return SyscallAddress;
         }
     }
@@ -137,17 +137,17 @@ PVOID SC_Address(PVOID NtApiAddress)
 }
 #endif
 
-
 BOOL SW3_PopulateSyscallList()
 {
     // Return early if the list is already populated.
-    if (SW3_SyscallList.Count) return TRUE;
+    if (SW3_SyscallList.Count)
+        return TRUE;
 
-    #ifdef _WIN64
+#ifdef _WIN64
     PSW3_PEB Peb = (PSW3_PEB)__readgsqword(0x60);
-    #else
+#else
     PSW3_PEB Peb = (PSW3_PEB)__readfsdword(0x30);
-    #endif
+#endif
     PSW3_PEB_LDR_DATA Ldr = Peb->Ldr;
     PIMAGE_EXPORT_DIRECTORY ExportDirectory = NULL;
     PVOID DllBase = NULL;
@@ -162,18 +162,22 @@ BOOL SW3_PopulateSyscallList()
         PIMAGE_NT_HEADERS NtHeaders = SW3_RVA2VA(PIMAGE_NT_HEADERS, DllBase, DosHeader->e_lfanew);
         PIMAGE_DATA_DIRECTORY DataDirectory = (PIMAGE_DATA_DIRECTORY)NtHeaders->OptionalHeader.DataDirectory;
         DWORD VirtualAddress = DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
-        if (VirtualAddress == 0) continue;
+        if (VirtualAddress == 0)
+            continue;
 
         ExportDirectory = (PIMAGE_EXPORT_DIRECTORY)SW3_RVA2VA(ULONG_PTR, DllBase, VirtualAddress);
 
         // If this is NTDLL.dll, exit loop.
         PCHAR DllName = SW3_RVA2VA(PCHAR, DllBase, ExportDirectory->Name);
 
-        if ((*(ULONG*)DllName | 0x20202020) != 0x6c64746e) continue;
-        if ((*(ULONG*)(DllName + 4) | 0x20202020) == 0x6c642e6c) break;
+        if ((*(ULONG *)DllName | 0x20202020) != 0x6c64746e)
+            continue;
+        if ((*(ULONG *)(DllName + 4) | 0x20202020) == 0x6c642e6c)
+            break;
     }
 
-    if (!ExportDirectory) return FALSE;
+    if (!ExportDirectory)
+        return FALSE;
 
     DWORD NumberOfNames = ExportDirectory->NumberOfNames;
     PDWORD Functions = SW3_RVA2VA(PDWORD, DllBase, ExportDirectory->AddressOfFunctions);
@@ -188,14 +192,15 @@ BOOL SW3_PopulateSyscallList()
         PCHAR FunctionName = SW3_RVA2VA(PCHAR, DllBase, Names[NumberOfNames - 1]);
 
         // Is this a system call?
-        if (*(USHORT*)FunctionName == 0x775a)
+        if (*(USHORT *)FunctionName == 0x775a)
         {
             Entries[i].Hash = SW3_HashSyscall(FunctionName);
             Entries[i].Address = Functions[Ordinals[NumberOfNames - 1]];
             Entries[i].SyscallAddress = SC_Address(SW3_RVA2VA(PVOID, DllBase, Entries[i].Address));
 
             i++;
-            if (i == SW3_MAX_ENTRIES) break;
+            if (i == SW3_MAX_ENTRIES)
+                break;
         }
     } while (--NumberOfNames);
 
@@ -233,7 +238,8 @@ BOOL SW3_PopulateSyscallList()
 EXTERN_C DWORD SW3_GetSyscallNumber(DWORD FunctionHash)
 {
     // Ensure SW3_SyscallList is populated.
-    if (!SW3_PopulateSyscallList()) return -1;
+    if (!SW3_PopulateSyscallList())
+        return -1;
 
     for (DWORD i = 0; i < SW3_SyscallList.Count; i++)
     {
@@ -246,16 +252,36 @@ EXTERN_C DWORD SW3_GetSyscallNumber(DWORD FunctionHash)
     return -1;
 }
 
+// EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash)
+// {
+//     // Ensure SW3_SyscallList is populated.
+//     if (!SW3_PopulateSyscallList())
+//         return NULL;
+
+//     for (DWORD i = 0; i < SW3_SyscallList.Count; i++)
+//     {
+//         if (FunctionHash == SW3_SyscallList.Entries[i].Hash)
+//         {
+//             return SW3_SyscallList.Entries[i].SyscallAddress;
+//         }
+//     }
+
+//     return NULL;
+// }
+
 EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash)
 {
     // Ensure SW3_SyscallList is populated.
-    if (!SW3_PopulateSyscallList()) return NULL;
+    if (!SW3_PopulateSyscallList())
+        return NULL;
 
     for (DWORD i = 0; i < SW3_SyscallList.Count; i++)
     {
         if (FunctionHash == SW3_SyscallList.Entries[i].Hash)
         {
-            return SW3_SyscallList.Entries[i].SyscallAddress;
+            PVOID syscallAddress = SW3_SyscallList.Entries[i].SyscallAddress;
+            __asm__("movq %0, %%r11" : : "r"(syscallAddress)); // 将syscallAddress移动到r11寄存器
+            return syscallAddress;
         }
     }
 
@@ -265,127 +291,181 @@ EXTERN_C PVOID SW3_GetSyscallAddress(DWORD FunctionHash)
 EXTERN_C PVOID SW3_GetRandomSyscallAddress(DWORD FunctionHash)
 {
     // Ensure SW3_SyscallList is populated.
-    if (!SW3_PopulateSyscallList()) return NULL;
+    if (!SW3_PopulateSyscallList())
+        return NULL;
 
-    DWORD index = ((DWORD) rand()) % SW3_SyscallList.Count;
+    DWORD index = ((DWORD)rand()) % SW3_SyscallList.Count;
 
-    while (FunctionHash == SW3_SyscallList.Entries[index].Hash){
+    while (FunctionHash == SW3_SyscallList.Entries[index].Hash)
+    {
         // Spoofing the syscall return address
-        index = ((DWORD) rand()) % SW3_SyscallList.Count;
+        index = ((DWORD)rand()) % SW3_SyscallList.Count;
     }
     return SW3_SyscallList.Entries[index].SyscallAddress;
 }
 #if defined(__GNUC__)
 
+// __declspec(naked) NTSTATUS NtAllocateVirtualMemory(
+//     IN HANDLE ProcessHandle,
+//     IN OUT PVOID *BaseAddress,
+//     IN ULONG ZeroBits,
+//     IN OUT PSIZE_T RegionSize,
+//     IN ULONG AllocationType,
+//     IN ULONG Protect)
+// {
+//     asm(
+//         "mov [rsp +8], rcx \n"
+//         "mov [rsp+16], rdx \n"
+//         "mov [rsp+24], r8 \n"
+//         "mov [rsp+32], r9 \n"
+//         "sub rsp, 0x28 \n"
+//         "mov ecx, 0x0B942107 \n"
+//         "call SW3_GetSyscallAddress \n"
+//         "mov ecx, 0x0B942107 \n"
+//         "call SW3_GetSyscallNumber \n"
+//         "add rsp, 0x28 \n"
+//         "mov rcx, [rsp+8] \n"
+//         "mov rdx, [rsp+16] \n"
+//         "mov r8, [rsp+24] \n"
+//         "mov r9, [rsp+32] \n"
+//         "mov r10, rcx \n"
+//         "jmp r11 \n"
+//         "ret \n");
+// }
+
 __declspec(naked) NTSTATUS NtAllocateVirtualMemory(
-	IN HANDLE ProcessHandle,
-	IN OUT PVOID * BaseAddress,
-	IN ULONG ZeroBits,
-	IN OUT PSIZE_T RegionSize,
-	IN ULONG AllocationType,
-	IN ULONG Protect)
+    IN HANDLE ProcessHandle,
+    IN OUT PVOID *BaseAddress,
+    IN ULONG ZeroBits,
+    IN OUT PSIZE_T RegionSize,
+    IN ULONG AllocationType,
+    IN ULONG Protect)
 {
-	asm(
-		"mov [rsp +8], rcx \n"
-		"mov [rsp+16], rdx \n"
-		"mov [rsp+24], r8 \n"
-		"mov [rsp+32], r9 \n"
-		"sub rsp, 0x28 \n"
-		"mov ecx, 0x0B942107 \n"
-		"call SW3_GetSyscallNumber \n"
-		"add rsp, 0x28 \n"
-		"mov rcx, [rsp+8] \n"
-		"mov rdx, [rsp+16] \n"
-		"mov r8, [rsp+24] \n"
-		"mov r9, [rsp+32] \n"
-		"mov r10, rcx \n"
-		"syscall \n"
-		"ret \n"
-	);
+    asm(
+        "mov [rsp +8], rcx \n"
+        "mov [rsp+16], rdx \n"
+        "mov [rsp+24], r8 \n"
+        "mov [rsp+32], r9 \n"
+        "sub rsp, 0x28 \n"
+        "mov ecx, 0x0B942107 \n"
+        "call SW3_GetSyscallNumber \n"
+        "add rsp, 0x28 \n"
+        "mov rcx, [rsp+8] \n"
+        "mov rdx, [rsp+16] \n"
+        "mov r8, [rsp+24] \n"
+        "mov r9, [rsp+32] \n"
+        "mov r10, rcx \n"
+        ".BYTE 0x00 \n"
+        ".BYTE 0x11 \n"
+        ".BYTE 0x22 \n"
+        ".BYTE 0x33 \n"
+        ".BYTE 0x44 \n"
+        ".BYTE 0x55 \n"
+        ".BYTE 0x66 \n"
+        ".BYTE 0x77 \n"
+        "ret \n");
 }
 
 __declspec(naked) NTSTATUS NtProtectVirtualMemory(
-	IN HANDLE ProcessHandle,
-	IN OUT PVOID * BaseAddress,
-	IN OUT PSIZE_T RegionSize,
-	IN ULONG NewProtect,
-	OUT PULONG OldProtect)
+    IN HANDLE ProcessHandle,
+    IN OUT PVOID *BaseAddress,
+    IN OUT PSIZE_T RegionSize,
+    IN ULONG NewProtect,
+    OUT PULONG OldProtect)
 {
-	asm(
-		"mov [rsp +8], rcx \n"
-		"mov [rsp+16], rdx \n"
-		"mov [rsp+24], r8 \n"
-		"mov [rsp+32], r9 \n"
-		"sub rsp, 0x28 \n"
-		"mov ecx, 0x9D95891E \n"
-		"call SW3_GetSyscallNumber \n"
-		"add rsp, 0x28 \n"
-		"mov rcx, [rsp+8] \n"
-		"mov rdx, [rsp+16] \n"
-		"mov r8, [rsp+24] \n"
-		"mov r9, [rsp+32] \n"
-		"mov r10, rcx \n"
-		"syscall \n"
-		"ret \n"
-	);
+    asm(
+        "mov [rsp +8], rcx \n"
+        "mov [rsp+16], rdx \n"
+        "mov [rsp+24], r8 \n"
+        "mov [rsp+32], r9 \n"
+        "sub rsp, 0x28 \n"
+        "mov ecx, 0x9D95891E \n"
+        "call SW3_GetSyscallNumber \n"
+        "add rsp, 0x28 \n"
+        "mov rcx, [rsp+8] \n"
+        "mov rdx, [rsp+16] \n"
+        "mov r8, [rsp+24] \n"
+        "mov r9, [rsp+32] \n"
+        "mov r10, rcx \n"
+        ".BYTE 0x00 \n"
+        ".BYTE 0x11 \n"
+        ".BYTE 0x22 \n"
+        ".BYTE 0x33 \n"
+        ".BYTE 0x44 \n"
+        ".BYTE 0x55 \n"
+        ".BYTE 0x66 \n"
+        ".BYTE 0x77 \n"
+        "ret \n");
 }
 
 __declspec(naked) NTSTATUS NtCreateThreadEx(
-	OUT PHANDLE ThreadHandle,
-	IN ACCESS_MASK DesiredAccess,
-	IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
-	IN HANDLE ProcessHandle,
-	IN PVOID StartRoutine,
-	IN PVOID Argument OPTIONAL,
-	IN ULONG CreateFlags,
-	IN SIZE_T ZeroBits,
-	IN SIZE_T StackSize,
-	IN SIZE_T MaximumStackSize,
-	IN PPS_ATTRIBUTE_LIST AttributeList OPTIONAL)
+    OUT PHANDLE ThreadHandle,
+    IN ACCESS_MASK DesiredAccess,
+    IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
+    IN HANDLE ProcessHandle,
+    IN PVOID StartRoutine,
+    IN PVOID Argument OPTIONAL,
+    IN ULONG CreateFlags,
+    IN SIZE_T ZeroBits,
+    IN SIZE_T StackSize,
+    IN SIZE_T MaximumStackSize,
+    IN PPS_ATTRIBUTE_LIST AttributeList OPTIONAL)
 {
-	asm(
-		"mov [rsp +8], rcx \n"
-		"mov [rsp+16], rdx \n"
-		"mov [rsp+24], r8 \n"
-		"mov [rsp+32], r9 \n"
-		"sub rsp, 0x28 \n"
-		"mov ecx, 0xC8270771 \n"
-		"call SW3_GetSyscallNumber \n"
-		"add rsp, 0x28 \n"
-		"mov rcx, [rsp+8] \n"
-		"mov rdx, [rsp+16] \n"
-		"mov r8, [rsp+24] \n"
-		"mov r9, [rsp+32] \n"
-		"mov r10, rcx \n"
-		"syscall \n"
-		"ret \n"
-	);
+    asm(
+        "mov [rsp +8], rcx \n"
+        "mov [rsp+16], rdx \n"
+        "mov [rsp+24], r8 \n"
+        "mov [rsp+32], r9 \n"
+        "sub rsp, 0x28 \n"
+        "mov ecx, 0xC8270771 \n"
+        "call SW3_GetSyscallNumber \n"
+        "add rsp, 0x28 \n"
+        "mov rcx, [rsp+8] \n"
+        "mov rdx, [rsp+16] \n"
+        "mov r8, [rsp+24] \n"
+        "mov r9, [rsp+32] \n"
+        "mov r10, rcx \n"
+        ".BYTE 0x00 \n"
+        ".BYTE 0x11 \n"
+        ".BYTE 0x22 \n"
+        ".BYTE 0x33 \n"
+        ".BYTE 0x44 \n"
+        ".BYTE 0x55 \n"
+        ".BYTE 0x66 \n"
+        ".BYTE 0x77 \n"
+        "ret \n");
 }
 
 __declspec(naked) NTSTATUS NtWaitForMultipleObjects(
-	IN ULONG Count,
-	IN PHANDLE Handles,
-	IN WAIT_TYPE WaitType,
-	IN BOOLEAN Alertable,
-	IN PLARGE_INTEGER Timeout OPTIONAL)
+    IN ULONG Count,
+    IN PHANDLE Handles,
+    IN WAIT_TYPE WaitType,
+    IN BOOLEAN Alertable,
+    IN PLARGE_INTEGER Timeout OPTIONAL)
 {
-	asm(
-		"mov [rsp +8], rcx \n"
-		"mov [rsp+16], rdx \n"
-		"mov [rsp+24], r8 \n"
-		"mov [rsp+32], r9 \n"
-		"sub rsp, 0x28 \n"
-		"mov ecx, 0x0D42EA52 \n"
-		"call SW3_GetSyscallNumber \n"
-		"add rsp, 0x28 \n"
-		"mov rcx, [rsp+8] \n"
-		"mov rdx, [rsp+16] \n"
-		"mov r8, [rsp+24] \n"
-		"mov r9, [rsp+32] \n"
-		"mov r10, rcx \n"
-		"syscall \n"
-		"ret \n"
-	);
+    asm(
+        "mov [rsp +8], rcx \n"
+        "mov [rsp+16], rdx \n"
+        "mov [rsp+24], r8 \n"
+        "mov [rsp+32], r9 \n"
+        "sub rsp, 0x28 \n"
+        "mov ecx, 0x0D42EA52 \n"
+        "call SW3_GetSyscallNumber \n"
+        "add rsp, 0x28 \n"
+        "mov rcx, [rsp+8] \n"
+        "mov rdx, [rsp+16] \n"
+        "mov r8, [rsp+24] \n"
+        "mov r9, [rsp+32] \n"
+        "mov r10, rcx \n"
+        ".BYTE 0x00 \n"
+        ".BYTE 0x11 \n"
+        ".BYTE 0x22 \n"
+        ".BYTE 0x33 \n"
+        ".BYTE 0x44 \n"
+        ".BYTE 0x55 \n"
+        ".BYTE 0x66 \n"
+        ".BYTE 0x77 \n"
+        "ret \n");
 }
 
 #endif
